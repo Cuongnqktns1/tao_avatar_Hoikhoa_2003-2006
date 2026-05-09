@@ -13,30 +13,47 @@
         .custom-file-upload {
             display: inline-block;
             width: 85%;
-            padding: 12px;
+            padding: 14px;
             background-color: #007bff;
             color: white;
-            border-radius: 8px;
+            border-radius: 10px;
             font-weight: bold;
             cursor: pointer;
             margin-bottom: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-size: 1.1em;
         }
         #upload { display: none; }
 
-        #canvas-container { position: relative; width: 100%; padding-top: 100%; border-radius: 8px; overflow: hidden; background-color: #f8f9fa; border: 1px solid #ddd; }
+        #canvas-container { position: relative; width: 100%; padding-top: 100%; border-radius: 10px; overflow: hidden; background-color: #f8f9fa; border: 1px solid #ddd; }
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; touch-action: none; }
 
         .controls { margin-top: 20px; display: flex; flex-direction: column; gap: 12px; align-items: center; }
-        input[type="range"] { width: 80%; height: 6px; background: #ddd; border-radius: 5px; outline: none; }
+        input[type="range"] { width: 80%; height: 8px; cursor: pointer; }
         
-        .btn-download { width: 90%; padding: 14px; background-color: #28a745; color: white; border: none; border-radius: 8px; font-size: 1.1em; font-weight: bold; cursor: pointer; }
+        .btn-download { width: 95%; padding: 15px; background-color: #28a745; color: white; border: none; border-radius: 10px; font-size: 1.2em; font-weight: bold; cursor: pointer; }
         
-        /* Phần hiển thị ảnh kết quả cho iPhone */
+        /* HỘP THOẠI CÂU HỎI TÙY CHỈNH (MODAL) */
+        #passwordModal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: #fff; margin: 20% auto; padding: 25px; border-radius: 15px; width: 85%; max-width: 350px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); text-align: center;
+        }
+        .modal-content h3 { color: #d9534f; margin-top: 0; font-size: 1.3em; }
+        .modal-content p { font-weight: bold; font-size: 1.05em; color: #333; line-height: 1.5; }
+        .modal-content input { width: 90%; padding: 12px; margin: 15px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 1.1em; text-align: center; }
+        .modal-content button { 
+            width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 1em; cursor: pointer;
+        }
+        .btn-confirm { background-color: #28a745; color: white; margin-bottom: 10px; }
+        .btn-cancel { background-color: #eee; color: #555; }
+
+        /* Kết quả */
         #result-container { display: none; margin-top: 20px; border-top: 2px solid #eee; padding-top: 20px; }
-        #result-image { width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .instruction { font-size: 0.9em; color: #d9534f; font-weight: bold; margin-top: 10px; }
-        .hint { font-size: 0.85em; color: #65676b; font-style: italic; }
+        #result-image { width: 100%; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 3px solid #28a745; }
+        .instruction { font-size: 1em; color: #d9534f; font-weight: bold; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -44,10 +61,7 @@
 <div class="container">
     <h2>Tạo Avatar Hội Khóa 20 Năm<br>THPT 1/5 Nghĩa Đàn (2003-2006)</h2>
     
-    <!-- Nút chọn ảnh kiểu mới -->
-    <label for="upload" class="custom-file-upload">
-         📸 Bước 1: Chọn ảnh của bạn
-    </label>
+    <label for="upload" class="custom-file-upload">📸 BƯỚC 1: CHỌN ẢNH CỦA BẠN</label>
     <input type="file" id="upload" accept="image/*">
     
     <div id="canvas-container">
@@ -55,16 +69,24 @@
     </div>
     
     <div class="controls">
-        <span class="hint">Bước 2: Dùng tay di chuyển và phóng to ảnh bên dưới</span>
+        <p style="font-size: 0.9em; color: #666; margin:0;">BƯỚC 2: DI CHUYỂN & PHÓNG TO ẢNH CHO KHỚP</p>
         <input type="range" id="zoom" min="0.1" max="4" step="0.01" value="1">
-        
-        <button id="generate" class="btn-download">Bước 3: Hoàn thành & Tải về</button>
+        <button id="showModalBtn" class="btn-download">BƯỚC 3: HOÀN THÀNH & TẢI VỀ</button>
     </div>
 
-    <!-- Vùng hiển thị kết quả cho iPhone -->
     <div id="result-container">
-        <p class="instruction">NHẤN GIỮ VÀO ẢNH DƯỚI ĐÂY<br>VÀ CHỌN "LƯU VÀO ẢNH"</p>
+        <p class="instruction">NHẤN GIỮ VÀO ẢNH DƯỚI ĐÂY<br>CHỌN "LƯU VÀO ẢNH" ĐỂ TẢI VỀ</p>
         <img id="result-image" src="" alt="Ảnh kết quả">
+    </div>
+</div>
+
+<div id="passwordModal">
+    <div class="modal-content">
+        <h3>Ban tổ chức hỏi?</h3>
+        <p>Lễ kỷ niệm 20 năm ra trường khóa chúng ta tổ chức ngày nào?<br><small>(Gợi ý: DD/MM/YYYY)</small></p>
+        <input type="text" id="passInput" placeholder="Ví dụ: 27/6/2026">
+        <button class="btn-confirm" id="confirmBtn">XÁC NHẬN</button>
+        <button class="btn-cancel" id="cancelBtn">HỦY</button>
     </div>
 </div>
 
@@ -73,14 +95,21 @@
     const ctx = canvas.getContext('2d');
     const upload = document.getElementById('upload');
     const zoomInput = document.getElementById('zoom');
-    const generateBtn = document.getElementById('generate');
+    const showModalBtn = document.getElementById('showModalBtn');
+    
+    const passwordModal = document.getElementById('passwordModal');
+    const confirmBtn = document.getElementById('confirmBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const passInput = document.getElementById('passInput');
+    
     const resultContainer = document.getElementById('result-container');
     const resultImage = document.getElementById('result-image');
 
+    const CORRECT_PASS = "27/6/2026"; // Mật khẩu của anh
+
     let userImg = new Image();
     let frameImg = new Image();
-    frameImg.crossOrigin = "anonymous";
-    frameImg.src = 'khung-avatar.png'; // Đảm bảo file này nằm cùng thư mục trên GitHub
+    frameImg.src = 'khung-avatar.png'; 
 
     let posX = 500, posY = 500, scale = 1;
     let isDragging = false, startX, startY;
@@ -96,8 +125,7 @@
             userImg.onload = () => {
                 scale = Math.max(canvas.width / userImg.width, canvas.height / userImg.height);
                 zoomInput.value = scale;
-                posX = canvas.width / 2;
-                posY = canvas.height / 2;
+                posX = canvas.width / 2; posY = canvas.height / 2;
                 draw();
             };
         };
@@ -116,17 +144,13 @@
         ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
     }
 
-    // Xử lý di chuyển (Cả chuột và cảm ứng)
+    // Di chuyển ảnh
     function getCoords(e) {
         const rect = canvas.getBoundingClientRect();
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        return {
-            x: (clientX - rect.left) * (canvas.width / rect.width),
-            y: (clientY - rect.top) * (canvas.height / rect.height)
-        };
+        return { x: (clientX - rect.left) * (canvas.width / rect.width), y: (clientY - rect.top) * (canvas.height / rect.height) };
     }
-
     function start(e) { if (!userImg.src) return; isDragging = true; const c = getCoords(e); startX = c.x; startY = c.y; }
     function end() { isDragging = false; }
     function move(e) {
@@ -137,29 +161,31 @@
         draw();
         if (e.touches) e.preventDefault();
     }
-
-    canvas.addEventListener('mousedown', start);
-    window.addEventListener('mouseup', end);
-    canvas.addEventListener('mousemove', move);
-    canvas.addEventListener('touchstart', start, {passive: false});
-    window.addEventListener('touchend', end);
-    canvas.addEventListener('touchmove', move, {passive: false});
+    canvas.addEventListener('mousedown', start); window.addEventListener('mouseup', end); canvas.addEventListener('mousemove', move);
+    canvas.addEventListener('touchstart', start, {passive: false}); window.addEventListener('touchend', end); canvas.addEventListener('touchmove', move, {passive: false});
 
     zoomInput.oninput = () => { scale = parseFloat(zoomInput.value); draw(); };
 
-    // Xử lý tạo ảnh kết quả
-    generateBtn.onclick = () => {
+    // Xử lý Hộp thoại (Modal)
+    showModalBtn.onclick = () => {
         if (!userImg.src) { alert("Vui lòng chọn ảnh trước!"); return; }
-        
-        // Xuất ảnh từ canvas thành DataURL
-        const finalImage = canvas.toDataURL('image/png');
-        
-        // Hiển thị vùng kết quả
-        resultImage.src = finalImage;
-        resultContainer.style.display = 'block';
-        
-        // Cuộn xuống vùng ảnh để người dùng thấy
-        resultContainer.scrollIntoView({ behavior: 'smooth' });
+        passwordModal.style.display = 'block';
+        passInput.focus();
+    };
+
+    cancelBtn.onclick = () => { passwordModal.style.display = 'none'; passInput.value = ''; };
+
+    confirmBtn.onclick = () => {
+        if (passInput.value === CORRECT_PASS) {
+            const finalImage = canvas.toDataURL('image/png');
+            resultImage.src = finalImage;
+            resultContainer.style.display = 'block';
+            passwordModal.style.display = 'none';
+            resultContainer.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            alert("Sai rồi! Gợi ý: Ngày 27/6/2026 năm 2026.");
+            passInput.value = '';
+        }
     };
 </script>
 
