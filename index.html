@@ -2,36 +2,52 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tạo Avatar THPT 1/5 Nghĩa Đàn 2003-2006</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tạo Avatar THPT 1/5 Nghĩa Đàn</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background-color: #f4f7f6; padding: 10px; margin: 0; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h2 { font-size: 1.1em; margin-bottom: 5px; }
-        p.desc { font-size: 0.9em; color: #666; margin-top: 0; }
+        body { font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: center; background-color: #f0f2f5; padding: 15px; margin: 0; color: #1c1e21; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+        h2 { font-size: 1.2em; line-height: 1.4; color: #050505; margin-bottom: 15px; }
         
-        #canvas-container { position: relative; width: 100%; padding-top: 100%; overflow: hidden; border: 1px solid #ddd; background-color: #eee; margin-top: 10px; }
-        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; touch-action: none; cursor: grab; }
-        canvas:active { cursor: grabbing; }
+        /* Thiết kế lại nút chọn tệp */
+        .custom-file-upload {
+            display: inline-block;
+            width: 85%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #upload { display: none; }
 
-        .controls { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+        #canvas-container { position: relative; width: 100%; padding-top: 100%; border-radius: 8px; overflow: hidden; background-color: #f8f9fa; border: 1px solid #ddd; }
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; touch-action: none; }
+
+        .controls { margin-top: 20px; display: flex; flex-direction: column; gap: 12px; align-items: center; }
+        input[type="range"] { width: 80%; height: 6px; background: #ddd; border-radius: 5px; outline: none; }
         
-        /* Chỉnh input file gọn hơn trên mobile */
-        input[type="file"] { max-width: 100%; font-size: 14px; margin-bottom: 10px;}
-
-        button { padding: 12px 24px; cursor: pointer; border-radius: 5px; border: none; background: #28a745; color: white; font-weight: bold; font-size: 1.1em; width: 80%; }
-        button:hover { background: #218838; }
-        input[type="range"] { width: 100%; max-width: 250px; }
-        .zoom-label { font-size: 0.9em; margin-bottom: 2px; }
-        .hint { font-size: 0.85em; color: #777; font-style: italic; margin-top: 5px; margin-bottom: 0; }
+        .btn-download { width: 90%; padding: 14px; background-color: #28a745; color: white; border: none; border-radius: 8px; font-size: 1.1em; font-weight: bold; cursor: pointer; }
+        
+        /* Phần hiển thị ảnh kết quả cho iPhone */
+        #result-container { display: none; margin-top: 20px; border-top: 2px solid #eee; padding-top: 20px; }
+        #result-image { width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .instruction { font-size: 0.9em; color: #d9534f; font-weight: bold; margin-top: 10px; }
+        .hint { font-size: 0.85em; color: #65676b; font-style: italic; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Tạo Avatar Sự Kiện Hội Khóa 20 năm<br>Trường THPT 1/5 Nghĩa Đàn (2003-2006)</h2>
-    <p class="desc">Chọn ảnh của bạn, căn chỉnh và tải về</p>
+    <h2>Tạo Avatar Hội Khóa 20 Năm<br>THPT 1/5 Nghĩa Đàn (2003-2006)</h2>
     
+    <!-- Nút chọn ảnh kiểu mới -->
+    <label for="upload" class="custom-file-upload">
+         📸 Bước 1: Chọn ảnh của bạn
+    </label>
     <input type="file" id="upload" accept="image/*">
     
     <div id="canvas-container">
@@ -39,12 +55,16 @@
     </div>
     
     <div class="controls">
-        <label class="zoom-label">Phóng to / Thu nhỏ:</label>
+        <span class="hint">Bước 2: Dùng tay di chuyển và phóng to ảnh bên dưới</span>
         <input type="range" id="zoom" min="0.1" max="4" step="0.01" value="1">
         
-        <p class="hint">(Dùng chuột hoặc chạm tay để di chuyển ảnh khớp với khung)</p>
-        
-        <button id="download">Tải Ảnh Về Điện Thoại</button>
+        <button id="generate" class="btn-download">Bước 3: Hoàn thành & Tải về</button>
+    </div>
+
+    <!-- Vùng hiển thị kết quả cho iPhone -->
+    <div id="result-container">
+        <p class="instruction">NHẤN GIỮ VÀO ẢNH DƯỚI ĐÂY<br>VÀ CHỌN "LƯU VÀO ẢNH"</p>
+        <img id="result-image" src="" alt="Ảnh kết quả">
     </div>
 </div>
 
@@ -53,13 +73,14 @@
     const ctx = canvas.getContext('2d');
     const upload = document.getElementById('upload');
     const zoomInput = document.getElementById('zoom');
-    const downloadBtn = document.getElementById('download');
+    const generateBtn = document.getElementById('generate');
+    const resultContainer = document.getElementById('result-container');
+    const resultImage = document.getElementById('result-image');
 
     let userImg = new Image();
     let frameImg = new Image();
-    
-    // THAY ĐỔI ĐƯỜNG DẪN FILE KHUNG CỦA ANH TẠI ĐÂY (VD: khung.png)
-    frameImg.src = 'khung-avatar.png'; 
+    frameImg.crossOrigin = "anonymous";
+    frameImg.src = 'khung-avatar.png'; // Đảm bảo file này nằm cùng thư mục trên GitHub
 
     let posX = 500, posY = 500, scale = 1;
     let isDragging = false, startX, startY;
@@ -73,12 +94,8 @@
         reader.onload = (event) => {
             userImg.src = event.target.result;
             userImg.onload = () => {
-                // Tự động căn giữa và phóng to ảnh khít với khung
-                scale = canvas.width / userImg.width;
-                if(userImg.height * scale < canvas.height) scale = canvas.height / userImg.height;
-
+                scale = Math.max(canvas.width / userImg.width, canvas.height / userImg.height);
                 zoomInput.value = scale;
-                zoomInput.max = scale * 4; // Cho phép zoom x4 lần kích thước gốc
                 posX = canvas.width / 2;
                 posY = canvas.height / 2;
                 draw();
@@ -89,7 +106,6 @@
 
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
         if (userImg.src) {
             ctx.save();
             ctx.translate(posX, posY);
@@ -97,99 +113,53 @@
             ctx.drawImage(userImg, -userImg.width / 2, -userImg.height / 2);
             ctx.restore();
         }
-        
-        // Vẽ khung đè lên trên ảnh user
         ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
     }
 
-    // --- XỬ LÝ DI CHUYỂN & ZOOM (DÙNG CHUNG CHUỘT VÀ CẢM ỨNG) ---
-
-    // Hàm lấy tọa độ chuẩn
+    // Xử lý di chuyển (Cả chuột và cảm ứng)
     function getCoords(e) {
-        let x, y;
-        if (e.touches) { // Touch
-            x = e.touches[0].clientX;
-            y = e.touches[0].clientY;
-        } else { // Chuột
-            x = e.offsetX;
-            y = e.offsetY;
-        }
-        // Tính toán tọa độ chuẩn trên canvas thực (1000x1000) dựa trên kích thước hiển thị trên màn hình
         const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         return {
-            x: (x - rect.left) * (canvas.width / rect.width),
-            y: (y - rect.top) * (canvas.height / rect.height)
+            x: (clientX - rect.left) * (canvas.width / rect.width),
+            y: (clientY - rect.top) * (canvas.height / rect.height)
         };
     }
 
-    // Bắt đầu giữ/chạm
-    function dragStart(e) {
-        if (!userImg.src) return;
-        isDragging = true;
-        const coords = getCoords(e);
-        startX = coords.x;
-        startY = coords.y;
-        e.preventDefault(); // Ngăn trình duyệt cuộn trang khi vuốt trên canvas
-    }
-
-    // Kết thúc giữ/chạm
-    function dragEnd() {
-        isDragging = false;
-    }
-
-    // Đang kéo/vuốt
-    function dragMove(e) {
-        if (isDragging) {
-            const coords = getCoords(e);
-            posX += (coords.x - startX);
-            posY += (coords.y - startY);
-            startX = coords.x;
-            startY = coords.y;
-            draw();
-            e.preventDefault(); // Ngăn trình duyệt cuộn trang khi vuốt trên canvas
-        }
-    }
-
-    // Sự kiện CHUỘT
-    canvas.addEventListener('mousedown', dragStart);
-    window.addEventListener('mouseup', dragEnd);
-    canvas.addEventListener('mousemove', dragMove);
-
-    // Sự kiện CẢM ỨNG (Điện thoại)
-    canvas.addEventListener('touchstart', dragStart, {passive: false});
-    window.addEventListener('touchend', dragEnd);
-    canvas.addEventListener('touchmove', dragMove, {passive: false});
-
-
-    // Xử lý thanh Zoom
-    zoomInput.oninput = () => {
-        scale = parseFloat(zoomInput.value);
+    function start(e) { if (!userImg.src) return; isDragging = true; const c = getCoords(e); startX = c.x; startY = c.y; }
+    function end() { isDragging = false; }
+    function move(e) {
+        if (!isDragging) return;
+        const c = getCoords(e);
+        posX += (c.x - startX); posY += (c.y - startY);
+        startX = c.x; startY = c.y;
         draw();
-    };
+        if (e.touches) e.preventDefault();
+    }
 
-    // --- XỬ LÝ TẢI ẢNH (BẢO MẬT & IPHONE) ---
-    downloadBtn.onclick = () => {
-        try {
-            // Cách 1 (Phổ biến): Dùng toBlob để tải ảnh PNG
-            canvas.toBlob(function(blob) {
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.download = 'avatar-20nam-1-5.png';
-                link.href = url;
-                link.click();
-                
-                // Giải phóng bộ nhớ sau khi tải xong
-                setTimeout(() => URL.revokeObjectURL(url), 200);
-            }, 'image/png');
-        } catch (e) {
-            // Cách 2 (Sửa lỗi iPhone/Zalo): Nếu cách 1 bị lỗi, xuất ảnh ra base64
-            // Và yêu cầu người dùng nhấn giữ ảnh để lưu
-            const dataUrl = canvas.toDataURL('image/png');
-            if(confirm("Trình duyệt chặn tải trực tiếp. Nhấn OK để mở ảnh, sau đó nhấn giữ ảnh để LƯU.")) {
-                const newWindow = window.open();
-                newWindow.document.body.innerHTML = `<img src="${dataUrl}" style="max-width: 100%;" alt="Avatar kỷ niệm">`;
-            }
-        }
+    canvas.addEventListener('mousedown', start);
+    window.addEventListener('mouseup', end);
+    canvas.addEventListener('mousemove', move);
+    canvas.addEventListener('touchstart', start, {passive: false});
+    window.addEventListener('touchend', end);
+    canvas.addEventListener('touchmove', move, {passive: false});
+
+    zoomInput.oninput = () => { scale = parseFloat(zoomInput.value); draw(); };
+
+    // Xử lý tạo ảnh kết quả
+    generateBtn.onclick = () => {
+        if (!userImg.src) { alert("Vui lòng chọn ảnh trước!"); return; }
+        
+        // Xuất ảnh từ canvas thành DataURL
+        const finalImage = canvas.toDataURL('image/png');
+        
+        // Hiển thị vùng kết quả
+        resultImage.src = finalImage;
+        resultContainer.style.display = 'block';
+        
+        // Cuộn xuống vùng ảnh để người dùng thấy
+        resultContainer.scrollIntoView({ behavior: 'smooth' });
     };
 </script>
 
