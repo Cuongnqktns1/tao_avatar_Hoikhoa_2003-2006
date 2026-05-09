@@ -3,35 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tạo Avatar Theo Khung</title>
+    <title>Tạo Avatar THPT 1/5 Nghĩa Đàn 2003-2006</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background-color: #f4f7f6; padding: 20px; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        canvas { border: 1px solid #ddd; max-width: 100%; height: auto; margin-top: 15px; background-color: #eee; }
-        .controls { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; align-items: center; }
-        button { padding: 10px 20px; cursor: pointer; border-radius: 5px; border: none; background: #28a745; color: white; font-weight: bold; }
+        body { font-family: sans-serif; text-align: center; background-color: #f4f7f6; padding: 10px; margin: 0; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h2 { font-size: 1.1em; margin-bottom: 5px; }
+        p.desc { font-size: 0.9em; color: #666; margin-top: 0; }
+        
+        #canvas-container { position: relative; width: 100%; padding-top: 100%; overflow: hidden; border: 1px solid #ddd; background-color: #eee; margin-top: 10px; }
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+        canvas:active { cursor: grabbing; }
+
+        .controls { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+        
+        /* Chỉnh input file gọn hơn trên mobile */
+        input[type="file"] { max-width: 100%; font-size: 14px; margin-bottom: 10px;}
+
+        button { padding: 12px 24px; cursor: pointer; border-radius: 5px; border: none; background: #28a745; color: white; font-weight: bold; font-size: 1.1em; width: 80%; }
         button:hover { background: #218838; }
-        input[type="range"] { width: 200px; }
+        input[type="range"] { width: 100%; max-width: 250px; }
+        .zoom-label { font-size: 0.9em; margin-bottom: 2px; }
+        .hint { font-size: 0.85em; color: #777; font-style: italic; margin-top: 5px; margin-bottom: 0; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Tạo Avatar Sự Kiện Hội Khóa 20 năm - Trường THPT 1/5 Nghĩa Đàn Khóa 2003-2006</h2>
-    <p>Chọn ảnh của bạn, căn chỉnh và tải về</p>
+    <h2>Tạo Avatar Sự Kiện Hội Khóa 20 năm<br>Trường THPT 1/5 Nghĩa Đàn (2003-2006)</h2>
+    <p class="desc">Chọn ảnh của bạn, căn chỉnh và tải về</p>
     
     <input type="file" id="upload" accept="image/*">
-    <br>
     
-    <canvas id="canvas" width="1000" height="1000"></canvas>
+    <div id="canvas-container">
+        <canvas id="canvas" width="1000" height="1000"></canvas>
+    </div>
     
     <div class="controls">
-        <label>Phóng to/Thu nhỏ:</label>
-        <input type="range" id="zoom" min="0.1" max="3" step="0.01" value="1">
+        <label class="zoom-label">Phóng to / Thu nhỏ:</label>
+        <input type="range" id="zoom" min="0.1" max="4" step="0.01" value="1">
         
-        <p><small>(Bạn có thể dùng chuột hoặc chạm tay để di chuyển ảnh bên dưới khung)</small></p>
+        <p class="hint">(Dùng chuột hoặc chạm tay để di chuyển ảnh khớp với khung)</p>
         
-        <button id="download">Tải Ảnh Của Bạn</button>
+        <button id="download">Tải Ảnh Về Điện Thoại</button>
     </div>
 </div>
 
@@ -45,7 +58,7 @@
     let userImg = new Image();
     let frameImg = new Image();
     
-    // THAY ĐỔI ĐƯỜNG DẪN FILE KHUNG CỦA ANH TẠI ĐÂY
+    // THAY ĐỔI ĐƯỜNG DẪN FILE KHUNG CỦA ANH TẠI ĐÂY (VD: khung.png)
     frameImg.src = 'khung-avatar.png'; 
 
     let posX = 500, posY = 500, scale = 1;
@@ -55,13 +68,17 @@
 
     upload.onchange = (e) => {
         const file = e.target.files[0];
+        if (!file) return;
         const reader = new FileReader();
         reader.onload = (event) => {
             userImg.src = event.target.result;
             userImg.onload = () => {
-                // Tự động căn giữa ảnh khi mới tải lên
+                // Tự động căn giữa và phóng to ảnh khít với khung
                 scale = canvas.width / userImg.width;
+                if(userImg.height * scale < canvas.height) scale = canvas.height / userImg.height;
+
                 zoomInput.value = scale;
+                zoomInput.max = scale * 4; // Cho phép zoom x4 lần kích thước gốc
                 posX = canvas.width / 2;
                 posY = canvas.height / 2;
                 draw();
@@ -85,39 +102,94 @@
         ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
     }
 
-    // Xử lý zoom
+    // --- XỬ LÝ DI CHUYỂN & ZOOM (DÙNG CHUNG CHUỘT VÀ CẢM ỨNG) ---
+
+    // Hàm lấy tọa độ chuẩn
+    function getCoords(e) {
+        let x, y;
+        if (e.touches) { // Touch
+            x = e.touches[0].clientX;
+            y = e.touches[0].clientY;
+        } else { // Chuột
+            x = e.offsetX;
+            y = e.offsetY;
+        }
+        // Tính toán tọa độ chuẩn trên canvas thực (1000x1000) dựa trên kích thước hiển thị trên màn hình
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: (x - rect.left) * (canvas.width / rect.width),
+            y: (y - rect.top) * (canvas.height / rect.height)
+        };
+    }
+
+    // Bắt đầu giữ/chạm
+    function dragStart(e) {
+        if (!userImg.src) return;
+        isDragging = true;
+        const coords = getCoords(e);
+        startX = coords.x;
+        startY = coords.y;
+        e.preventDefault(); // Ngăn trình duyệt cuộn trang khi vuốt trên canvas
+    }
+
+    // Kết thúc giữ/chạm
+    function dragEnd() {
+        isDragging = false;
+    }
+
+    // Đang kéo/vuốt
+    function dragMove(e) {
+        if (isDragging) {
+            const coords = getCoords(e);
+            posX += (coords.x - startX);
+            posY += (coords.y - startY);
+            startX = coords.x;
+            startY = coords.y;
+            draw();
+            e.preventDefault(); // Ngăn trình duyệt cuộn trang khi vuốt trên canvas
+        }
+    }
+
+    // Sự kiện CHUỘT
+    canvas.addEventListener('mousedown', dragStart);
+    window.addEventListener('mouseup', dragEnd);
+    canvas.addEventListener('mousemove', dragMove);
+
+    // Sự kiện CẢM ỨNG (Điện thoại)
+    canvas.addEventListener('touchstart', dragStart, {passive: false});
+    window.addEventListener('touchend', dragEnd);
+    canvas.addEventListener('touchmove', dragMove, {passive: false});
+
+
+    // Xử lý thanh Zoom
     zoomInput.oninput = () => {
         scale = parseFloat(zoomInput.value);
         draw();
     };
 
-    // Xử lý kéo thả ảnh
-    canvas.onmousedown = (e) => {
-        isDragging = true;
-        startX = e.offsetX * (canvas.width / canvas.clientWidth);
-        startY = e.offsetY * (canvas.height / canvas.clientHeight);
-    };
-
-    window.onmouseup = () => isDragging = false;
-
-    canvas.onmousemove = (e) => {
-        if (isDragging) {
-            const mouseX = e.offsetX * (canvas.width / canvas.clientWidth);
-            const mouseY = e.offsetY * (canvas.height / canvas.clientHeight);
-            posX += (mouseX - startX);
-            posY += (mouseY - startY);
-            startX = mouseX;
-            startY = mouseY;
-            draw();
-        }
-    };
-
-    // Tải ảnh về
+    // --- XỬ LÝ TẢI ẢNH (BẢO MẬT & IPHONE) ---
     downloadBtn.onclick = () => {
-        const link = document.createElement('a');
-        link.download = 'avatar-cua-toi.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
+        try {
+            // Cách 1 (Phổ biến): Dùng toBlob để tải ảnh PNG
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.download = 'avatar-20nam-1-5.png';
+                link.href = url;
+                link.click();
+                
+                // Giải phóng bộ nhớ sau khi tải xong
+                setTimeout(() => URL.revokeObjectURL(url), 200);
+            }, 'image/png');
+        } catch (e) {
+            // Cách 2 (Sửa lỗi iPhone/Zalo): Nếu cách 1 bị lỗi, xuất ảnh ra base64
+            // Và yêu cầu người dùng nhấn giữ ảnh để lưu
+            const dataUrl = canvas.toDataURL('image/png');
+            if(confirm("Trình duyệt chặn tải trực tiếp. Nhấn OK để mở ảnh, sau đó nhấn giữ ảnh để LƯU.")) {
+                const newWindow = window.open();
+                newWindow.document.body.innerHTML = `<img src="${dataUrl}" style="max-width: 100%;" alt="Avatar kỷ niệm">`;
+            }
+        }
     };
 </script>
 
